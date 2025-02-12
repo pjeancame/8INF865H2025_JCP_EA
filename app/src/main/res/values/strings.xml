@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Via Solis</string>
+    <string name="welcome_banner">Welcome to Via Solis</string>
 </resources>
