@@ -1,2 +1,2 @@
 Jean Came Poulard  
-Etienne Arnoult
+Etienne Arnould
