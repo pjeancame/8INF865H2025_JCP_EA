@@ -20,11 +20,11 @@
 
     <!-- Écran Détails du Sentier (TrailDetailsScreen) -->
     <string name="trail_details_title">Détails du sentier</string>
-    <string name="trail_length">Longueur :</string>
-    <string name="trail_duration">Durée estimée :</string>
-    <string name="trail_difficulty">Difficulté :</string>
-    <string name="trail_elevation">Dénivelé :</string>
-    <string name="start_navigation">Démarrer le guidage</string>
+    <string name="difficulty">Difficulté</string>
+    <string name="length">Longueur</string>
+    <string name="duration">Durée</string>
+    <string name="elevation">Dénivelé</string>
+    <string name="map_placeholder">Carte IGN ici</string>
 
     <!-- Écran Navigation (NavigationScreen) -->
     <string name="navigation_title">Guidage vers le point de départ</string>

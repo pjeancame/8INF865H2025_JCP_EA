@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.*
 
 class HikingViewModel : ViewModel() {
     // Liste des jours de la semaine
-    private val daysOfWeek = listOf("Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim")
+    private val daysOfWeek = listOf("Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche")
 
     // Stocke l'index du jour sélectionné
     private val _selectedDayIndex = MutableStateFlow(0)
