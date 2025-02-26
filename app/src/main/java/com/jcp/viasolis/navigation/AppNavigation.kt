@@ -24,6 +24,12 @@ fun AppNavigation() {
             val trailId = backStackEntry.arguments?.getString("trailId")
             TrailDetailsScreen(navController, trailId)
         }
-        composable("navigation") { NavigationScreen(navController) }
+        composable(
+            "navigation/{trailId}",
+            arguments = listOf(navArgument("trailId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val trailId = backStackEntry.arguments?.getString("trailId")
+            NavigationScreen(navController, trailId)
+        }
     }
 }

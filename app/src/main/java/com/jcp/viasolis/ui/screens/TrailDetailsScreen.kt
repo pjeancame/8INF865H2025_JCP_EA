@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.jcp.viasolis.ui.components.DifficultyIndicator
 import com.jcp.viasolis.ui.components.InfoBox
+import com.jcp.viasolis.data.getTrailById
 
 import com.jcp.viasolis.R
 import com.jcp.viasolis.ui.components.InfoBoxText
@@ -35,6 +36,11 @@ import com.jcp.viasolis.ui.components.InfoBoxText
 fun TrailDetailsScreen(navController: NavController, trailId: String?) {
     val trail = remember { getTrailById(trailId) }
     val scrollState = rememberScrollState()
+
+    if (trail == null) {
+        Text(text = "Sentier introuvable", fontSize = 18.sp)
+        return
+    }
 
     Column(
         modifier = Modifier
@@ -89,7 +95,7 @@ fun TrailDetailsScreen(navController: NavController, trailId: String?) {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     InfoBox("Difficulté") { DifficultyIndicator(trail.difficulty) }
-                    InfoBoxText("Longueur", "${trail.distance} km")
+                    InfoBoxText("Longueur", trail.distance)
                     InfoBoxText("Durée", trail.duration)
                     InfoBoxText("Dénivelé", trail.elevation)
                 }
@@ -127,7 +133,7 @@ fun TrailDetailsScreen(navController: NavController, trailId: String?) {
 
         // Bouton de guidage
         Button(
-            onClick = { navController.navigate("navigation") },
+            onClick = { navController.navigate("navigation/${trail.id}") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
@@ -137,16 +143,4 @@ fun TrailDetailsScreen(navController: NavController, trailId: String?) {
             Text(text = "Démarrer le guidage", fontSize = 18.sp)
         }
     }
-}
-
-// Fonction fictive pour récupérer les détails d'un sentier en fonction de son ID
-fun getTrailById(trailId: String?): Trail {
-    return Trail(
-        name = "Sentier des Crêtes",
-        duration = "2h30",
-        distance = "8 km",
-        elevation = "450m",
-        difficulty = 2,
-        description = "Ce sentier vous emmène à travers de magnifiques crêtes offrant une vue imprenable sur la vallée. La montée est progressive et accessible aux randonneurs ayant une bonne condition physique."
-    )
 }

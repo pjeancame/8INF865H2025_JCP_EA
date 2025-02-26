@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jcp.viasolis.ui.HikingViewModel
 import kotlinx.coroutines.launch
+import com.jcp.viasolis.data.Trail
+import com.jcp.viasolis.data.trailsList
 
 
 @Composable
@@ -37,16 +39,7 @@ fun TrailsScreen(navController: NavController, hikingViewModel: HikingViewModel 
     val selectedDuration by hikingViewModel.selectedDuration.collectAsState()
     val selectedDistance by hikingViewModel.selectedDistance.collectAsState()
 
-    val trails = listOf(
-        Trail("Sentier des Crêtes", "2h30", "8 km", "450m", 2, "Un magnifique sentier avec des vues imprenables sur les montagnes environnantes."),
-        Trail("Chemin du Lac", "1h45", "5 km", "200m", 1, "Une balade paisible le long du lac, idéale pour les familles."),
-        Trail("Randonnée des Aiguilles", "4h00", "12 km", "750m", 4, "Une randonnée difficile avec un dénivelé important, offrant un panorama exceptionnel."),
-        Trail("Vallée des Arbres", "3h15", "10 km", "600m", 3, "Un sentier forestier agréable avec des passages en clairière et une belle diversité de paysages."),
-        Trail("Col des Roches", "5h00", "15 km", "850m", 4, "Un itinéraire exigeant pour les randonneurs expérimentés, offrant une vue panoramique à l'arrivée."),
-        Trail("Forêt Enchantée", "2h00", "6 km", "300m", 2, "Une promenade accessible avec de magnifiques arbres centenaires et une atmosphère paisible."),
-        Trail("Montagne de la Lune", "6h30", "20 km", "1100m", 4, "Un défi pour les passionnés de randonnée, récompensé par un paysage à couper le souffle."),
-        Trail("Cascade Mystique", "1h30", "4 km", "150m", 1, "Une courte randonnée menant à une magnifique cascade cachée dans la forêt.")
-    )
+    val trails = trailsList
 
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
@@ -78,7 +71,8 @@ fun TrailsScreen(navController: NavController, hikingViewModel: HikingViewModel 
         }
 
         items(trails) { trail ->
-            TrailItem(trail, onClick = { navController.navigate("trail_details/${trail.name}") })
+            TrailItem(trail, onClick = { navController.navigate("trail_details/${trail.id}")
+            })
         }
 
         item {
