@@ -35,9 +35,10 @@ import com.jcp.viasolis.data.trailsList
 
 @Composable
 fun TrailsScreen(navController: NavController, hikingViewModel: HikingViewModel = viewModel()) {
-    val selectedDay by hikingViewModel.selectedDay.collectAsState()
-    val selectedDuration by hikingViewModel.selectedDuration.collectAsState()
-    val selectedDistance by hikingViewModel.selectedDistance.collectAsState()
+    val selectedDay by rememberUpdatedState(hikingViewModel.selectedDay.collectAsState().value)
+    val selectedDuration by rememberUpdatedState(hikingViewModel.selectedDuration.collectAsState().value)
+    val selectedDistance by rememberUpdatedState(hikingViewModel.selectedDistance.collectAsState().value)
+
 
     val trails = trailsList
 
