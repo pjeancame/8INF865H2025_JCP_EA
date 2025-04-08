@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">Via Solis</string>
+    <string name="welcome_banner">Welcome to Via Solis</string>
+
+    <!-- Écran Accueil (HomeScreen) -->
+    <string name="home_title">Météo et filtres</string>
+    <string name="select_weather">Sélectionner la météo</string>
+    <string name="duration_filter">Durée max de randonnée</string>
+    <string name="distance_filter">Distance max au départ</string>
+    <string name="view_trails">Trouver une randonnée</string>
+
+    <!-- Écran Liste des Sentiers (TrailsScreen) -->
+    <string name="trail_list_title">Liste des sentiers</string>
+    <string name="no_trails_found">Aucun sentier correspondant aux critères</string>
+    <string name="view_trail_details">Voir détails du sentier</string>
+    <string name="trails_title">Randonnées disponibles</string>
+    <string name="modify_filters">Modifier les filtres</string>
+    <string name="return_top">Revenir en haut</string>
+    <string name="more_results">Plus de résultats</string>
+
+    <!-- Écran Détails du Sentier (TrailDetailsScreen) -->
+    <string name="trail_details_title">Détails du sentier</string>
+    <string name="difficulty">Difficulté</string>
+    <string name="length">Longueur</string>
+    <string name="duration">Durée</string>
+    <string name="elevation">Dénivelé</string>
+    <string name="map_placeholder">Carte IGN ici</string>
+
+    <!-- Écran Navigation (NavigationScreen) -->
+    <string name="navigation_title">Guidage vers le point de départ</string>
+    <string name="start_point_navigation">Se rendre au point de départ</string>
+    <string name="follow_trail">Suivre itinéraire</string>
+    <string name="back">Retour</string>
+</resources>
