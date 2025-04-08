@@ -5,6 +5,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.*
+import com.jcp.viasolis.data.RetrofitInstance
+import com.jcp.viasolis.data.WeatherData
+import com.jcp.viasolis.data.WeatherResponse
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class HikingViewModel : ViewModel() {
     // Liste des jours de la semaine
@@ -48,6 +54,21 @@ class HikingViewModel : ViewModel() {
         val newDistance = _selectedDistance.value + if (increment) 5 else -5
         if (newDistance in 5..50) { // Limite entre 5 km et 50 km
             _selectedDistance.value = newDistance
+        }
+    }
+
+
+    private val _weatherInfo = MutableStateFlow<WeatherData?>(null)
+    val weatherInfo: StateFlow<WeatherData?> = _weatherInfo
+
+    fun loadWeather(lat: Double, lon: Double, apiKey: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = RetrofitInstance.api.getForecast(lat, lon, apiKey)
+                _weatherInfo.value = response.list.firstOrNull() // Prochaine tranche horaire
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 }

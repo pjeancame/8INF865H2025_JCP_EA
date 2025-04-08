@@ -27,6 +27,14 @@ fun HomeScreen(navController: NavController, hikingViewModel: HikingViewModel = 
     val selectedDuration by hikingViewModel.selectedDuration.collectAsState()
     val selectedDistance by hikingViewModel.selectedDistance.collectAsState()
 
+    val weatherInfo by hikingViewModel.weatherInfo.collectAsState()
+    LaunchedEffect(Unit) {
+        hikingViewModel.loadWeather(
+            lat = 48.8566, // Exemple pour Paris
+            lon = 2.3522,
+            apiKey = "e0ebb395be6e3aa2af887052ea56ea06"
+        )
+    }
     Column(modifier = Modifier.fillMaxSize().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
 
         // Sélection du jour de la semaine
@@ -63,9 +71,10 @@ fun HomeScreen(navController: NavController, hikingViewModel: HikingViewModel = 
             modifier = Modifier.fillMaxWidth().padding(8.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "Météo du jour", fontSize = 20.sp)
-                Text(text = "Température : 18°C", fontSize = 16.sp)
-                Text(text = "Vent : 10 km/h", fontSize = 16.sp)
+                weatherInfo?.let {
+                    Text(text = "Température : ${it.main.temp}°C", fontSize = 16.sp)
+                    Text(text = "Vent : ${it.wind.speed} km/h", fontSize = 16.sp)
+                } ?: Text(text = "Chargement de la météo...", fontSize = 16.sp)
             }
         }
 
