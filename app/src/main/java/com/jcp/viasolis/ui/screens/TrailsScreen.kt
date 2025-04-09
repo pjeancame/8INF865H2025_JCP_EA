@@ -32,6 +32,15 @@ import kotlinx.coroutines.launch
 import com.jcp.viasolis.data.Trail
 import com.jcp.viasolis.data.trailsList
 
+fun parseDurationToHours(duration: String): Float {
+    val regex = Regex("(\\d+)h(?:([0-5]?[0-9]))?")
+    val match = regex.find(duration) ?: return 0f
+
+    val hours = match.groupValues[1].toFloatOrNull() ?: 0f
+    val minutes = match.groupValues.getOrNull(2)?.toFloatOrNull() ?: 0f
+
+    return hours + (minutes / 60f)
+}
 
 @Composable
 fun TrailsScreen(navController: NavController, hikingViewModel: HikingViewModel = viewModel()) {
@@ -40,7 +49,9 @@ fun TrailsScreen(navController: NavController, hikingViewModel: HikingViewModel 
     val selectedDistance by rememberUpdatedState(hikingViewModel.selectedDistance.collectAsState().value)
 
 
-    val trails = trailsList
+    val trails = trailsList.filter {
+        parseDurationToHours(it.duration) <= selectedDuration
+    }
 
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()

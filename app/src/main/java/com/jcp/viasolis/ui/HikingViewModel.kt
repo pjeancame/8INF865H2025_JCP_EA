@@ -58,7 +58,8 @@ class HikingViewModel : ViewModel() {
     // Fonction pour mettre à jour la durée max de rando
     fun updateDuration(increment: Boolean) {
         val newDuration = _selectedDuration.value + if (increment) 1 else -1
-        if (newDuration in 1..10) { // Limite entre 1h et 10h
+        val maxAllowed = getMaxHikeDuration()
+        if (newDuration in 1..maxAllowed) {
             _selectedDuration.value = newDuration
         }
     }
@@ -136,5 +137,25 @@ class HikingViewModel : ViewModel() {
         formatter.timeZone = TimeZone.getTimeZone("America/Toronto")
 
         return formatter.format(date!!)
+    }
+
+    private fun parseTimeToFloat(time: String): Float {
+        val parts = time.split(":")
+        if (parts.size != 2) return 0f
+
+        val hours = parts[0].toFloatOrNull() ?: 0f
+        val minutes = parts[1].toFloatOrNull() ?: 0f
+
+        return hours + (minutes / 60f)
+    }
+
+    private fun getMaxHikeDuration(): Int {
+        val sunriseTime = parseTimeToFloat(_sunrise.value)
+        val sunsetTime = parseTimeToFloat(_sunset.value)
+        val duration = sunsetTime - sunriseTime
+
+        // arrondir à la 1/2 heure inférieure
+        val rounded = (duration * 2).toInt() / 2f
+        return rounded.toInt()
     }
 }
