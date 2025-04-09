@@ -12,6 +12,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
@@ -21,7 +22,10 @@ class HikingViewModel : ViewModel() {
     private val daysOfWeek = listOf("Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche")
 
     // Stocke l'index du jour sélectionné
-    private val _selectedDayIndex = MutableStateFlow(0)
+    private val todayIndex = Calendar.getInstance().get(Calendar.DAY_OF_WEEK).let {
+        (it + 5) % 7 // convertit de 1-7 (dim-lun) vers 0-6 (lun-dim)
+    }
+    private val _selectedDayIndex = MutableStateFlow(todayIndex)
     val selectedDayIndex: StateFlow<Int> = _selectedDayIndex
 
     // Expose le jour sélectionné sous forme de texte (écoute _selectedDayIndex)
@@ -74,17 +78,40 @@ class HikingViewModel : ViewModel() {
     fun loadWeather(lat: Double, lon: Double, apiKey: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val response = RetrofitInstance.api.getForecast(lat, lon, apiKey)
-                _weatherInfo.value = response.list.firstOrNull() // Prochaine tranche horaire
+                val forecastResponse = RetrofitInstance.api.getForecast(lat, lon, apiKey)
                 val currentWeather = RetrofitInstance.api.getCurrentWeather(lat, lon, apiKey)
 
+                // Récupération du jour sélectionné
+                val dayIndex = _selectedDayIndex.value
+
+                // Filtrage de la météo pour le bon jour
+                val cal = Calendar.getInstance()
+                val todayIndex = Calendar.getInstance().get(Calendar.DAY_OF_WEEK).let {
+                    (it + 5) % 7
+                }
+                val dayOffset = dayIndex - todayIndex
+                cal.add(Calendar.DAY_OF_YEAR, dayOffset)
+
+                val targetDateString = SimpleDateFormat("yyyy-MM-dd").format(cal.time)
+
+                val weatherForSelectedDay = forecastResponse.list.firstOrNull { item ->
+                    item.dt_txt.startsWith(targetDateString)
+                }
+
+                weatherForSelectedDay?.let {
+                    _weatherInfo.value = it
+                }
+
+                // Lever / coucher du soleil actuels
                 _sunrise.value = formatUnixTime(currentWeather.sys.sunrise)
                 _sunset.value = formatUnixTime(currentWeather.sys.sunset)
+
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
     }
+
 
     private fun formatUnixTime(unixTime: Long): String {
         val date = Date(unixTime * 1000)

@@ -30,13 +30,16 @@ fun HomeScreen(navController: NavController, hikingViewModel: HikingViewModel = 
     val sunset by hikingViewModel.sunset.collectAsState()
 
     val weatherInfo by hikingViewModel.weatherInfo.collectAsState()
-    LaunchedEffect(Unit) {
+    val selectedDayIndex by hikingViewModel.selectedDayIndex.collectAsState()
+
+    LaunchedEffect(selectedDayIndex) {
         hikingViewModel.loadWeather(
             lat = 48.4289, // Chicoutimi
             lon = -71.0596,
             apiKey = "e0ebb395be6e3aa2af887052ea56ea06"
         )
     }
+
     Column(modifier = Modifier.fillMaxSize().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
 
         // Sélection du jour de la semaine
