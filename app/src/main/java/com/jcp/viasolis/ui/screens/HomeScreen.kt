@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import com.jcp.viasolis.ui.HikingViewModel
 import com.jcp.viasolis.R
 
+
 @Composable
 fun HomeScreen(navController: NavController, hikingViewModel: HikingViewModel = viewModel()) {
     val selectedDay by hikingViewModel.selectedDay.collectAsState()
@@ -77,8 +78,14 @@ fun HomeScreen(navController: NavController, hikingViewModel: HikingViewModel = 
         ) {
             Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 weatherInfo?.let {
-                    Text(text = "Température : ${it.main.temp}°C", fontSize = 16.sp)
-                    Text(text = "Vent : ${it.wind.speed} km/h", fontSize = 16.sp)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        WeatherIcon(it.weather.firstOrNull()?.icon ?: "01d")
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text(text = "Température : ${it.main.temp}°C", fontSize = 16.sp)
+                            Text(text = "Vent : ${it.wind.speed} km/h", fontSize = 16.sp)
+                        }
+                    }
                 } ?: Text(text = "Chargement de la météo...", fontSize = 16.sp)
             }
         }
@@ -125,4 +132,25 @@ fun HomeScreen(navController: NavController, hikingViewModel: HikingViewModel = 
             Text(text = stringResource(id = R.string.view_trails), fontSize = 18.sp)
         }
     }
+}
+
+@Composable
+fun WeatherIcon(iconCode: String) {
+    val iconResId = when (iconCode) {
+        "01d" -> R.drawable.ic_clear_day
+        "01n" -> R.drawable.ic_clear_night
+        "02d", "02n" -> R.drawable.ic_partly_cloudy
+        "03d", "03n", "04d", "04n" -> R.drawable.ic_cloudy
+        "09d", "09n", "10d", "10n" -> R.drawable.ic_rain
+        "11d", "11n" -> R.drawable.ic_storm
+        "13d", "13n" -> R.drawable.ic_snow
+        "50d", "50n" -> R.drawable.ic_mist
+        else -> R.drawable.ic_clear_day
+    }
+
+    Image(
+        painter = painterResource(id = iconResId),
+        contentDescription = "Météo : $iconCode",
+        modifier = Modifier.size(48.dp)
+    )
 }

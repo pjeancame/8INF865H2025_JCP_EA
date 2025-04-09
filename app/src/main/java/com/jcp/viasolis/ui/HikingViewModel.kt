@@ -164,5 +164,5 @@ class HikingViewModel : ViewModel() {
         return rounded.toInt()
     }
 
-    
+
 }

@@ -8,7 +8,14 @@ data class WeatherResponse(
 data class WeatherData(
     val dt_txt: String,
     val main: MainInfo,
-    val wind: WindInfo
+    val wind: WindInfo,
+    val weather: List<WeatherDescription>
+)
+
+data class WeatherDescription(
+    val main: String,
+    val description: String,
+    val icon: String
 )
 
 data class MainInfo(
