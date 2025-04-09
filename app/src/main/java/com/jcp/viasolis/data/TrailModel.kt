@@ -8,5 +8,7 @@ data class Trail(
     val distance: String,
     val elevation: String,
     val difficulty: Int,
-    val description: String
+    val description: String,
+    val latitude: Double,
+    val longitude: Double
 )
