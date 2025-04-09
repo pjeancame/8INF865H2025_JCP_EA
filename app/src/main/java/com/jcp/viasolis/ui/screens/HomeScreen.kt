@@ -26,12 +26,14 @@ fun HomeScreen(navController: NavController, hikingViewModel: HikingViewModel = 
     val selectedDay by hikingViewModel.selectedDay.collectAsState()
     val selectedDuration by hikingViewModel.selectedDuration.collectAsState()
     val selectedDistance by hikingViewModel.selectedDistance.collectAsState()
+    val sunrise by hikingViewModel.sunrise.collectAsState()
+    val sunset by hikingViewModel.sunset.collectAsState()
 
     val weatherInfo by hikingViewModel.weatherInfo.collectAsState()
     LaunchedEffect(Unit) {
         hikingViewModel.loadWeather(
-            lat = 48.8566, // Exemple pour Paris
-            lon = 2.3522,
+            lat = 48.4289, // Chicoutimi
+            lon = -71.0596,
             apiKey = "e0ebb395be6e3aa2af887052ea56ea06"
         )
     }
@@ -54,11 +56,11 @@ fun HomeScreen(navController: NavController, hikingViewModel: HikingViewModel = 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Image(painter = painterResource(id = R.drawable.ic_sunrise), contentDescription = "Lever du soleil")
-                Text(text = "06:45", fontSize = 16.sp)
+                Text(text = "Lever : $sunrise", fontSize = 16.sp)
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Image(painter = painterResource(id = R.drawable.ic_sunset), contentDescription = "Coucher du soleil")
-                Text(text = "18:30", fontSize = 16.sp)
+                Text(text = "Coucher : $sunset", fontSize = 16.sp)
             }
         }
 

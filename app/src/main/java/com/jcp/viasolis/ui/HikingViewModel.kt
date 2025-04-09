@@ -11,6 +11,10 @@ import com.jcp.viasolis.data.WeatherResponse
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 class HikingViewModel : ViewModel() {
     // Liste des jours de la semaine
@@ -26,6 +30,12 @@ class HikingViewModel : ViewModel() {
         started = SharingStarted.Lazily,
         initialValue = daysOfWeek[0]
     )
+
+    private val _sunrise = MutableStateFlow("")
+    val sunrise: StateFlow<String> = _sunrise
+
+    private val _sunset = MutableStateFlow("")
+    val sunset: StateFlow<String> = _sunset
 
     // Fonction pour modifier le jour sélectionné
     fun changeDay(newIndex: Int) {
@@ -66,9 +76,20 @@ class HikingViewModel : ViewModel() {
             try {
                 val response = RetrofitInstance.api.getForecast(lat, lon, apiKey)
                 _weatherInfo.value = response.list.firstOrNull() // Prochaine tranche horaire
+                val currentWeather = RetrofitInstance.api.getCurrentWeather(lat, lon, apiKey)
+
+                _sunrise.value = formatUnixTime(currentWeather.sys.sunrise)
+                _sunset.value = formatUnixTime(currentWeather.sys.sunset)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
+    }
+
+    private fun formatUnixTime(unixTime: Long): String {
+        val date = Date(unixTime * 1000)
+        val format = SimpleDateFormat("HH:mm", Locale.getDefault())
+        format.timeZone = TimeZone.getTimeZone("America/Toronto") // fuseau horaire de Chicoutimi
+        return format.format(date)
     }
 }

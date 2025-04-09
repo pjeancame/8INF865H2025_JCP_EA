@@ -1,6 +1,7 @@
 package com.jcp.viasolis.data
 
 data class WeatherResponse(
+    val city: CityInfo,
     val list: List<WeatherData>
 )
 
@@ -16,4 +17,9 @@ data class MainInfo(
 
 data class WindInfo(
     val speed: Float
+)
+
+data class CityInfo(
+    val sunrise: Long,
+    val sunset: Long
 )
