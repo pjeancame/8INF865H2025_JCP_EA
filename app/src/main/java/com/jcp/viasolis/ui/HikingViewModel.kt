@@ -150,12 +150,19 @@ class HikingViewModel : ViewModel() {
     }
 
     private fun getMaxHikeDuration(): Int {
+        if (_sunrise.value.isBlank() || _sunset.value.isBlank()) {
+            return 10 // valeur par défaut temporaire si pas encore chargé
+        }
+
         val sunriseTime = parseTimeToFloat(_sunrise.value)
         val sunsetTime = parseTimeToFloat(_sunset.value)
         val duration = sunsetTime - sunriseTime
 
-        // arrondir à la 1/2 heure inférieure
+        if (duration <= 0f) return 10 // sécurité si valeurs incohérentes
+
         val rounded = (duration * 2).toInt() / 2f
         return rounded.toInt()
     }
+
+    
 }
