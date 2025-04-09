@@ -98,13 +98,19 @@ class HikingViewModel : ViewModel() {
                     item.dt_txt.startsWith(targetDateString)
                 }
 
+                val sunResponse = RetrofitInstance.sunApi.getSunInfo(
+                    lat = lat,
+                    lng = lon,
+                    date = targetDateString
+                )
+
+                _sunrise.value = formatIsoTimeToLocal(sunResponse.results.sunrise)
+                _sunset.value = formatIsoTimeToLocal(sunResponse.results.sunset)
+
+
                 weatherForSelectedDay?.let {
                     _weatherInfo.value = it
                 }
-
-                // Lever / coucher du soleil actuels
-                _sunrise.value = formatUnixTime(currentWeather.sys.sunrise)
-                _sunset.value = formatUnixTime(currentWeather.sys.sunset)
 
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -118,5 +124,17 @@ class HikingViewModel : ViewModel() {
         val format = SimpleDateFormat("HH:mm", Locale.getDefault())
         format.timeZone = TimeZone.getTimeZone("America/Toronto") // fuseau horaire de Chicoutimi
         return format.format(date)
+    }
+
+    private fun formatIsoTimeToLocal(isoTime: String): String {
+        val cleanedIso = isoTime.replace("+00:00", "+0000") // Hack pour API < 24
+        val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.getDefault())
+        parser.timeZone = TimeZone.getTimeZone("UTC")
+
+        val date = parser.parse(cleanedIso)
+        val formatter = SimpleDateFormat("HH:mm", Locale.getDefault())
+        formatter.timeZone = TimeZone.getTimeZone("America/Toronto")
+
+        return formatter.format(date!!)
     }
 }

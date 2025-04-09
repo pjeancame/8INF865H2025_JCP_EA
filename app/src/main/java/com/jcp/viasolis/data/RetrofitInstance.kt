@@ -11,4 +11,12 @@ object RetrofitInstance {
             .build()
             .create(WeatherService::class.java)
     }
+
+    val sunApi: SunService by lazy {
+        Retrofit.Builder()
+            .baseUrl("https://api.sunrise-sunset.org/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(SunService::class.java)
+    }
 }
