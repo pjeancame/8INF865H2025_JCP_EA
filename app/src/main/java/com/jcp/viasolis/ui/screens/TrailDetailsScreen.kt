@@ -25,9 +25,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
 import com.jcp.viasolis.ui.components.DifficultyIndicator
 import com.jcp.viasolis.ui.components.InfoBox
 import com.jcp.viasolis.data.getTrailById
+import com.google.maps.android.compose.*
 
 import com.jcp.viasolis.R
 import com.jcp.viasolis.ui.components.InfoBoxText
@@ -114,18 +117,22 @@ fun TrailDetailsScreen(navController: NavController, trailId: String?) {
         Spacer(modifier = Modifier.height(24.dp))
 
         // Carte IGN du tracé du sentier
-        Box(
+        val cameraPositionState = rememberCameraPositionState {
+            position = CameraPosition.fromLatLngZoom(
+                LatLng(trail.latitude, trail.longitude),
+                14f
+            )
+        }
+
+        GoogleMap(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(400.dp) // Carte plus grande
-                .padding(horizontal = 16.dp)
-                .background(Color.Gray)
+                .height(300.dp),
+            cameraPositionState = cameraPositionState
         ) {
-            Text(
-                text = "Carte IGN ici",
-                modifier = Modifier.align(Alignment.Center),
-                color = Color.White,
-                fontSize = 18.sp
+            Marker(
+                state = rememberMarkerState(position = LatLng(trail.latitude, trail.longitude)),
+                title = trail.name
             )
         }
 

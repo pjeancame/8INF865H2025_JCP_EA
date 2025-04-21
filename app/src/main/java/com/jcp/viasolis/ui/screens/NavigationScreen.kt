@@ -15,10 +15,17 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.jcp.viasolis.data.getTrailById
 import com.jcp.viasolis.R
+import com.google.maps.android.compose.*
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun NavigationScreen(navController: NavController, trailId: String?) {
     val trail = remember { getTrailById(trailId) }
+    val context = LocalContext.current
 
     if (trail == null) {
         Text(text = "Sentier introuvable", fontSize = 18.sp)
@@ -41,18 +48,22 @@ fun NavigationScreen(navController: NavController, trailId: String?) {
         }
 
         // Carte IGN
-        Box(
+        val trailLatLng = LatLng(trail.latitude, trail.longitude)
+
+        val cameraPositionState = rememberCameraPositionState {
+            position = CameraPosition.fromLatLngZoom(trailLatLng, 14f)
+        }
+
+        GoogleMap(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(300.dp)
-                .padding(horizontal = 16.dp)
-                .background(Color.Gray)
+                .padding(horizontal = 16.dp),
+            cameraPositionState = cameraPositionState
         ) {
-            Text(
-                text = "Carte IGN ici",
-                modifier = Modifier.align(Alignment.Center),
-                color = Color.White,
-                fontSize = 18.sp
+            Marker(
+                state = rememberMarkerState(position = trailLatLng),
+                title = trail.name
             )
         }
 
@@ -65,14 +76,16 @@ fun NavigationScreen(navController: NavController, trailId: String?) {
             modifier = Modifier.fillMaxWidth().padding(8.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = "Partir de :", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = { /* Sélection du point de départ */ }, modifier = Modifier.fillMaxWidth()) {
-                    Text("Sélectionner le point de départ")
-                }
+                Text(text = "Debut du sentier", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = { /* Guider vers le point de départ */ },
+                    onClick = {
+
+                        val uri = Uri.parse("google.navigation:q=${trail.latitude},${trail.longitude}")
+                        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+                            setPackage("com.google.android.apps.maps")
+                        }
+                        context.startActivity(intent)},
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {

@@ -21,11 +21,25 @@ import androidx.compose.material3.Text
 import com.jcp.viasolis.ui.HikingViewModel
 import com.jcp.viasolis.R
 
+
 @Composable
 fun HomeScreen(navController: NavController, hikingViewModel: HikingViewModel = viewModel()) {
     val selectedDay by hikingViewModel.selectedDay.collectAsState()
     val selectedDuration by hikingViewModel.selectedDuration.collectAsState()
     val selectedDistance by hikingViewModel.selectedDistance.collectAsState()
+    val sunrise by hikingViewModel.sunrise.collectAsState()
+    val sunset by hikingViewModel.sunset.collectAsState()
+
+    val weatherInfo by hikingViewModel.weatherInfo.collectAsState()
+    val selectedDayIndex by hikingViewModel.selectedDayIndex.collectAsState()
+
+    LaunchedEffect(selectedDayIndex) {
+        hikingViewModel.loadWeather(
+            lat = 48.4289, // Chicoutimi
+            lon = -71.0596,
+            apiKey = "e0ebb395be6e3aa2af887052ea56ea06"
+        )
+    }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
 
@@ -46,11 +60,11 @@ fun HomeScreen(navController: NavController, hikingViewModel: HikingViewModel = 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Image(painter = painterResource(id = R.drawable.ic_sunrise), contentDescription = "Lever du soleil")
-                Text(text = "06:45", fontSize = 16.sp)
+                Text(text = "Lever : $sunrise", fontSize = 16.sp)
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Image(painter = painterResource(id = R.drawable.ic_sunset), contentDescription = "Coucher du soleil")
-                Text(text = "18:30", fontSize = 16.sp)
+                Text(text = "Coucher : $sunset", fontSize = 16.sp)
             }
         }
 
@@ -63,9 +77,16 @@ fun HomeScreen(navController: NavController, hikingViewModel: HikingViewModel = 
             modifier = Modifier.fillMaxWidth().padding(8.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "Météo du jour", fontSize = 20.sp)
-                Text(text = "Température : 18°C", fontSize = 16.sp)
-                Text(text = "Vent : 10 km/h", fontSize = 16.sp)
+                weatherInfo?.let {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        WeatherIcon(it.weather.firstOrNull()?.icon ?: "01d")
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text(text = "Température : ${it.main.temp}°C", fontSize = 16.sp)
+                            Text(text = "Vent : ${it.wind.speed} km/h", fontSize = 16.sp)
+                        }
+                    }
+                } ?: Text(text = "Chargement de la météo...", fontSize = 16.sp)
             }
         }
 
@@ -111,4 +132,25 @@ fun HomeScreen(navController: NavController, hikingViewModel: HikingViewModel = 
             Text(text = stringResource(id = R.string.view_trails), fontSize = 18.sp)
         }
     }
+}
+
+@Composable
+fun WeatherIcon(iconCode: String) {
+    val iconResId = when (iconCode) {
+        "01d" -> R.drawable.ic_clear_day
+        "01n" -> R.drawable.ic_clear_night
+        "02d", "02n" -> R.drawable.ic_partly_cloudy
+        "03d", "03n", "04d", "04n" -> R.drawable.ic_cloudy
+        "09d", "09n", "10d", "10n" -> R.drawable.ic_rain
+        "11d", "11n" -> R.drawable.ic_storm
+        "13d", "13n" -> R.drawable.ic_snow
+        "50d", "50n" -> R.drawable.ic_mist
+        else -> R.drawable.ic_clear_day
+    }
+
+    Image(
+        painter = painterResource(id = iconResId),
+        contentDescription = "Météo : $iconCode",
+        modifier = Modifier.size(48.dp)
+    )
 }
