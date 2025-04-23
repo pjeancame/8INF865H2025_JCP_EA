@@ -31,9 +31,12 @@ fun HomeScreen(navController: NavController, hikingViewModel: HikingViewModel = 
     val sunset by hikingViewModel.sunset.collectAsState()
 
     val weatherInfo by hikingViewModel.weatherInfo.collectAsState()
-    val selectedDayIndex by hikingViewModel.selectedDayIndex.collectAsState()
+    val selectedDayOffset by hikingViewModel.selectedDayOffset.collectAsState()
+    val dayDate by hikingViewModel.selectedDayDate.collectAsState()
+    val weatherUnavailable by hikingViewModel.weatherUnavailable.collectAsState()
 
-    LaunchedEffect(selectedDayIndex) {
+
+    LaunchedEffect(selectedDayOffset) {
         hikingViewModel.loadWeather(
             lat = 48.4289, // Chicoutimi
             lon = -71.0596,
@@ -45,11 +48,11 @@ fun HomeScreen(navController: NavController, hikingViewModel: HikingViewModel = 
 
         // Sélection du jour de la semaine
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = { hikingViewModel.changeDay(hikingViewModel.selectedDayIndex.value - 1) }) {
+            IconButton(onClick = { hikingViewModel.changeDay(selectedDayOffset - 1) }) {
                 Icon(painter = painterResource(id = R.drawable.ic_arrow_left), contentDescription = "Jour précédent")
             }
-            Text(text = selectedDay, fontSize = 20.sp, modifier = Modifier.padding(horizontal = 16.dp))
-            IconButton(onClick = { hikingViewModel.changeDay(hikingViewModel.selectedDayIndex.value + 1) }) {
+            Text(text = "$selectedDay $dayDate", fontSize = 20.sp, modifier = Modifier.padding(horizontal = 16.dp))
+            IconButton(onClick = { hikingViewModel.changeDay(selectedDayOffset + 1) }) {
                 Icon(painter = painterResource(id = R.drawable.ic_arrow_right), contentDescription = "Jour suivant")
             }
         }
@@ -77,16 +80,20 @@ fun HomeScreen(navController: NavController, hikingViewModel: HikingViewModel = 
             modifier = Modifier.fillMaxWidth().padding(8.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                weatherInfo?.let {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        WeatherIcon(it.weather.firstOrNull()?.icon ?: "01d")
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Column {
-                            Text(text = "Température : ${it.main.temp}°C", fontSize = 16.sp)
-                            Text(text = "Vent : ${it.wind.speed} km/h", fontSize = 16.sp)
+                when {
+                    weatherUnavailable -> Text("Météo indisponible", fontSize = 16.sp)
+                    weatherInfo != null -> {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            WeatherIcon(weatherInfo!!.weather.firstOrNull()?.icon ?: "01d")
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Column {
+                                Text(text = "Température : ${weatherInfo!!.main.temp}°C", fontSize = 16.sp)
+                                Text(text = "Vent : ${weatherInfo!!.wind.speed} km/h", fontSize = 16.sp)
+                            }
                         }
                     }
-                } ?: Text(text = "Chargement de la météo...", fontSize = 16.sp)
+                    else -> Text("Chargement de la météo...", fontSize = 16.sp)
+                }
             }
         }
 

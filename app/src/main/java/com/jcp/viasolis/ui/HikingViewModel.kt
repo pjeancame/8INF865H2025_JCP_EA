@@ -16,6 +16,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import kotlinx.coroutines.withTimeoutOrNull
 
 class HikingViewModel : ViewModel() {
     // Liste des jours de la semaine
@@ -25,15 +26,40 @@ class HikingViewModel : ViewModel() {
     private val todayIndex = Calendar.getInstance().get(Calendar.DAY_OF_WEEK).let {
         (it + 5) % 7 // convertit de 1-7 (dim-lun) vers 0-6 (lun-dim)
     }
-    private val _selectedDayIndex = MutableStateFlow(todayIndex)
-    val selectedDayIndex: StateFlow<Int> = _selectedDayIndex
+    private val _selectedDayOffset = MutableStateFlow(0)
+    val selectedDayOffset: StateFlow<Int> = _selectedDayOffset
 
     // Expose le jour sélectionné sous forme de texte (écoute _selectedDayIndex)
-    val selectedDay: StateFlow<String> = _selectedDayIndex.map { daysOfWeek[it] }.stateIn(
-        scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Default),
+    val selectedDay: StateFlow<String> = _selectedDayOffset.map { offset ->
+        val cal = Calendar.getInstance()
+        cal.add(Calendar.DAY_OF_YEAR, offset)
+        val formatter = SimpleDateFormat("EEEE", Locale.FRENCH) // jour de la semaine
+        formatter.format(cal.time).replaceFirstChar { it.uppercaseChar() }
+    }.stateIn(
+        scope = CoroutineScope(Dispatchers.Default),
         started = SharingStarted.Lazily,
-        initialValue = daysOfWeek[0]
+        initialValue = ""
     )
+
+    private val todayCalendar = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+    val selectedDayDate: StateFlow<String> = _selectedDayOffset.map { offset ->
+        val cal = Calendar.getInstance()
+        cal.add(Calendar.DAY_OF_YEAR, offset)
+        val formatter = SimpleDateFormat("dd MMMM", Locale.FRENCH)
+        formatter.format(cal.time)
+    }.stateIn(
+        scope = CoroutineScope(Dispatchers.Default),
+        started = SharingStarted.Lazily,
+        initialValue = ""
+    )
+
+    private val _weatherUnavailable = MutableStateFlow(false)
+    val weatherUnavailable: StateFlow<Boolean> = _weatherUnavailable
 
     private val _sunrise = MutableStateFlow("")
     val sunrise: StateFlow<String> = _sunrise
@@ -42,10 +68,8 @@ class HikingViewModel : ViewModel() {
     val sunset: StateFlow<String> = _sunset
 
     // Fonction pour modifier le jour sélectionné
-    fun changeDay(newIndex: Int) {
-        if (newIndex in daysOfWeek.indices) {
-            _selectedDayIndex.value = newIndex
-        }
+    fun changeDay(offset: Int) {
+        _selectedDayOffset.value = offset
     }
 
     // Stocke les filtres de randonnée
@@ -79,41 +103,39 @@ class HikingViewModel : ViewModel() {
     fun loadWeather(lat: Double, lon: Double, apiKey: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val forecastResponse = RetrofitInstance.api.getForecast(lat, lon, apiKey)
-                val currentWeather = RetrofitInstance.api.getCurrentWeather(lat, lon, apiKey)
+                _weatherUnavailable.value = false
 
-                // Récupération du jour sélectionné
-                val dayIndex = _selectedDayIndex.value
+                val success = withTimeoutOrNull(5000) {
+                    val forecastResponse = RetrofitInstance.api.getForecast(lat, lon, apiKey)
+                    val currentWeather = RetrofitInstance.api.getCurrentWeather(lat, lon, apiKey)
 
-                // Filtrage de la météo pour le bon jour
-                val cal = Calendar.getInstance()
-                val todayIndex = Calendar.getInstance().get(Calendar.DAY_OF_WEEK).let {
-                    (it + 5) % 7
+                    val dayOffset = _selectedDayOffset.value
+                    val cal = Calendar.getInstance()
+                    cal.add(Calendar.DAY_OF_YEAR, dayOffset)
+                    val targetDateString = SimpleDateFormat("yyyy-MM-dd").format(cal.time)
+
+                    val entriesForDay = forecastResponse.list.filter { it.dt_txt.startsWith(targetDateString) }
+                    val weatherForSelectedDay = entriesForDay.firstOrNull { it.dt_txt.contains("12:00:00") }
+                        ?: entriesForDay.firstOrNull()
+
+                    val sunResponse = RetrofitInstance.sunApi.getSunInfo(
+                        lat = lat,
+                        lng = lon,
+                        date = targetDateString
+                    )
+
+                    _sunrise.value = formatIsoTimeToLocal(sunResponse.results.sunrise)
+                    _sunset.value = formatIsoTimeToLocal(sunResponse.results.sunset)
+
+                    _weatherInfo.value = weatherForSelectedDay
                 }
-                val dayOffset = dayIndex - todayIndex
-                cal.add(Calendar.DAY_OF_YEAR, dayOffset)
 
-                val targetDateString = SimpleDateFormat("yyyy-MM-dd").format(cal.time)
-
-                val weatherForSelectedDay = forecastResponse.list.firstOrNull { item ->
-                    item.dt_txt.startsWith(targetDateString)
-                }
-
-                val sunResponse = RetrofitInstance.sunApi.getSunInfo(
-                    lat = lat,
-                    lng = lon,
-                    date = targetDateString
-                )
-
-                _sunrise.value = formatIsoTimeToLocal(sunResponse.results.sunrise)
-                _sunset.value = formatIsoTimeToLocal(sunResponse.results.sunset)
-
-
-                weatherForSelectedDay?.let {
-                    _weatherInfo.value = it
+                if (success == null || _weatherInfo.value == null) {
+                    _weatherUnavailable.value = true
                 }
 
             } catch (e: Exception) {
+                _weatherUnavailable.value = true
                 e.printStackTrace()
             }
         }
