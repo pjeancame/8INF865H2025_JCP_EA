@@ -1,6 +1,5 @@
 package com.jcp.viasolis.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -47,6 +46,17 @@ fun NavigationScreen(navController: NavController, trailId: String?) {
             }
         }
 
+        // Titre du sentier en haut
+        Text(
+            text = trail.name,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            color = Color.Black
+        )
+
         // Carte IGN
         val trailLatLng = LatLng(trail.latitude, trail.longitude)
 
@@ -76,41 +86,20 @@ fun NavigationScreen(navController: NavController, trailId: String?) {
             modifier = Modifier.fillMaxWidth().padding(8.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = "Debut du sentier", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text(text = "Début du sentier", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = {
-
                         val uri = Uri.parse("google.navigation:q=${trail.latitude},${trail.longitude}")
                         val intent = Intent(Intent.ACTION_VIEW, uri).apply {
                             setPackage("com.google.android.apps.maps")
                         }
-                        context.startActivity(intent)},
+                        context.startActivity(intent)
+                    },
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(text = "Guider vers point de départ", fontSize = 18.sp)
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Section du sentier
-        Card(
-            shape = RoundedCornerShape(12.dp),
-            elevation = CardDefaults.cardElevation(4.dp),
-            modifier = Modifier.fillMaxWidth().padding(8.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = trail.name, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = { /* Démarrer la randonnée */ },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(text = "Démarrer Randonnée", fontSize = 18.sp)
                 }
             }
         }
