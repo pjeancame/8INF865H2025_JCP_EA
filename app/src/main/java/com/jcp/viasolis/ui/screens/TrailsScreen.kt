@@ -1,3 +1,4 @@
+
 package com.jcp.viasolis.ui.screens
 
 import androidx.compose.foundation.layout.*
@@ -36,10 +37,8 @@ import com.jcp.viasolis.ui.components.DifficultyIndicator
 fun parseDurationToHours(duration: String): Float {
     val regex = Regex("(\\d+)h(?:([0-5]?[0-9]))?")
     val match = regex.find(duration) ?: return 0f
-
     val hours = match.groupValues[1].toFloatOrNull() ?: 0f
     val minutes = match.groupValues.getOrNull(2)?.toFloatOrNull() ?: 0f
-
     return hours + (minutes / 60f)
 }
 
@@ -49,6 +48,8 @@ fun TrailsScreen(navController: NavController, hikingViewModel: HikingViewModel 
     val selectedDuration by rememberUpdatedState(hikingViewModel.selectedDuration.collectAsState().value)
     val selectedDistance by rememberUpdatedState(hikingViewModel.selectedDistance.collectAsState().value)
 
+    var visibleCount by remember { mutableStateOf(8) }
+    var showNoMoreResults by remember { mutableStateOf(false) }
 
     val trails = trailsList.filter {
         parseDurationToHours(it.duration) <= selectedDuration
@@ -57,66 +58,109 @@ fun TrailsScreen(navController: NavController, hikingViewModel: HikingViewModel 
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
-    LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp), state = listState) {
-        item {
-            Text(text = "Randonnées du $selectedDay", fontSize = 22.sp, modifier = Modifier.padding(bottom = 8.dp))
-        }
+    Box(modifier = Modifier.fillMaxSize()) {
 
-        item {
-            Card(
-                shape = RoundedCornerShape(12.dp),
-                elevation = CardDefaults.cardElevation(4.dp),
-                modifier = Modifier.fillMaxWidth().padding(8.dp)
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            state = listState
+        ) {
+            item {
+                Text(text = "Randonnées du $selectedDay", fontSize = 22.sp, modifier = Modifier.padding(bottom = 8.dp))
+            }
+
+            item {
+                Card(
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = CardDefaults.cardElevation(4.dp),
+                    modifier = Modifier.fillMaxWidth().padding(8.dp)
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(text = "Périmètre : $selectedDistance km", fontSize = 16.sp)
-                        Text(text = "Durée max : $selectedDuration h", fontSize = 16.sp)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(text = "Périmètre : $selectedDistance km", fontSize = 16.sp)
+                            Text(text = "Durée max : $selectedDuration h", fontSize = 16.sp)
+                        }
+                        Row(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { navController.navigate("home") }
+                                .padding(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_edit),
+                                contentDescription = "Modifier les filtres"
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(text = "Modifier filtres", fontSize = 14.sp)
+                        }
                     }
-                    IconButton(onClick = { navController.navigate("home") }) {
-                        Icon(painter = painterResource(id = R.drawable.ic_edit), contentDescription = "Modifier les filtres")
+                }
+            }
+
+            if (trails.isEmpty()) {
+                item {
+                    Text(
+                        text = "Aucune randonnée ne correspond à vos critères.",
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+
+            items(trails.take(visibleCount)) { trail ->
+                TrailItem(trail, onClick = { navController.navigate("trail_details/${trail.id}") })
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                    Button(onClick = {
+                        coroutineScope.launch {
+                            listState.scrollToItem(0)
+                        }
+                    }) {
+                        Text("Revenir en haut")
+                    }
+                    Button(onClick = {
+                        if (visibleCount < trails.size) {
+                            visibleCount += 8
+                        } else {
+                            showNoMoreResults = true
+                            coroutineScope.launch {
+                                kotlinx.coroutines.delay(3000)
+                                showNoMoreResults = false
+                            }
+                        }
+                    }) {
+                        Text("Plus de résultats")
                     }
                 }
             }
         }
-        if (trails.isEmpty()) {
-        item {
-            Text(
-                text = "Aucune randonnée ne correspond à vos critères.",
-                fontSize = 16.sp,
-                modifier = Modifier.padding(16.dp)
-            )
-        }
-    }
 
-        items(trails) { trail ->
-            TrailItem(trail, onClick = { navController.navigate("trail_details/${trail.id}")
-            })
-        }
-
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                Button(onClick = {
-                    coroutineScope.launch {
-                        listState.scrollToItem(0)
-                    }
-                }) {
-                    Text("Revenir en haut")
-                }
-                Button(onClick = { /* Charger plus de sentiers */ }) {
-                    Text("Plus de résultats")
-                }
+        if (showNoMoreResults) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 24.dp)
+            ) {
+                Text(
+                    text = "Aucun autre sentier",
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
             }
         }
     }
 }
 
-
-// Modèle de données pour un sentier
 data class Trail(
     val name: String,
     val duration: String,
@@ -126,7 +170,6 @@ data class Trail(
     val description: String
 )
 
-// Composable pour afficher un élément de sentier
 @Composable
 fun TrailItem(trail: Trail, onClick: () -> Unit) {
     Card(
