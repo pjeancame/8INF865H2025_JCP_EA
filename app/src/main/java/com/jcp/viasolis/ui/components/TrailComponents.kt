@@ -37,7 +37,17 @@ fun InfoBox(label: String, value: @Composable () -> Unit) {
 @Composable
 fun InfoBoxText(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(8.dp)) {
-        Text(text = label, fontSize = 14.sp, color = Color.Gray)
-        Text(text = value, fontSize = 14.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+        Text(
+            text = label,
+            fontSize = 14.sp,
+            color = Color.Gray,
+            maxLines = 1,
+            softWrap = false
+        )
+        Text(
+            text = value,
+            fontSize = 14.sp,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+        )
     }
 }
