@@ -31,6 +31,7 @@ import com.jcp.viasolis.ui.HikingViewModel
 import kotlinx.coroutines.launch
 import com.jcp.viasolis.data.Trail
 import com.jcp.viasolis.data.trailsList
+import com.jcp.viasolis.ui.components.DifficultyIndicator
 
 fun parseDurationToHours(duration: String): Float {
     val regex = Regex("(\\d+)h(?:([0-5]?[0-9]))?")
@@ -81,6 +82,15 @@ fun TrailsScreen(navController: NavController, hikingViewModel: HikingViewModel 
                 }
             }
         }
+        if (trails.isEmpty()) {
+        item {
+            Text(
+                text = "Aucune randonnée ne correspond à vos critères.",
+                fontSize = 16.sp,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
 
         items(trails) { trail ->
             TrailItem(trail, onClick = { navController.navigate("trail_details/${trail.id}")
@@ -134,18 +144,4 @@ fun TrailItem(trail: Trail, onClick: () -> Unit) {
     }
 }
 
-// Composable pour afficher le niveau de difficulté avec 4 rectangles remplis
-@Composable
-fun DifficultyIndicator(difficulty: Int) {
-    Row {
-        repeat(4) { index ->
-            Box(
-                modifier = Modifier
-                    .size(20.dp, 10.dp)
-                    .padding(end = 4.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(if (index < difficulty) Color.Red else Color.Gray)
-            )
-        }
-    }
-}
+

@@ -30,7 +30,7 @@ val trailsList = listOf(
         "Un défi pour les passionnés de randonnée, récompensé par un paysage à couper le souffle.",
         48.5200, -70.2480), // Parc des Monts-Valin
 
-    Trail("8", "Cascade Mystique", "1h00", "4 km", "150m", 1,
+    Trail("8", "Cascade Mystique", "1h10", "4 km", "150m", 1,
         "Une courte randonnée menant à une magnifique cascade cachée dans la forêt.",
         46.1324, -71.9285) // Parc régional de la Chaudière
 )
